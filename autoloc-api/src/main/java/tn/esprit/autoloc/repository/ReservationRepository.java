@@ -1,9 +1,16 @@
 package tn.esprit.autoloc.repository;
 
 import org.springframework.stereotype.Repository;
-import tn.esprit.autoloc.domain.Vehicule;
+import tn.esprit.autoloc.domain.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 @Repository
-public interface VehiculeRepository extends JpaRepository<Vehicule, Long> {
+public interface ReservationRepository extends JpaRepository<Reservation, Long> {
 }
+
+
+
+
+
+
+
