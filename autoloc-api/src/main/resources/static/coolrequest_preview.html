@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>IntelliJ IDEA - CoolRequest - AutoLoc API</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "JetBrains Mono", sans-serif; }
+        body { background: #1e1f22; color: #bcbec4; display: flex; flex-direction: column; height: 100vh; overflow: hidden; font-size: 13px; }
+
+        /* Window Header */
+        .window-header { background: #1e1f22; border-bottom: 1px solid #2b2d30; padding: 6px 12px; display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #8a8d93; }
+        .window-title { display: flex; align-items: center; gap: 8px; font-weight: 500; color: #dfe1e5; }
+        .window-dots { display: flex; gap: 6px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; background: #43454a; }
+
+        /* Main Area */
+        .main-container { display: flex; flex: 1; overflow: hidden; }
+
+        /* Left Sidebar: CoolRequest Endpoints Tree */
+        .sidebar { width: 320px; background: #2b2d30; border-right: 1px solid #1e1f22; display: flex; flex-direction: column; }
+        .sidebar-header { padding: 10px 14px; background: #2b2d30; border-bottom: 1px solid #393b40; display: flex; justify-content: space-between; align-items: center; }
+        .sidebar-title { font-weight: 600; color: #dfe1e5; font-size: 12px; display: flex; align-items: center; gap: 6px; }
+        .badge-cool { background: #3574f0; color: #fff; padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: bold; }
+        
+        .tree-search { padding: 8px 12px; border-bottom: 1px solid #393b40; }
+        .search-input { width: 100%; background: #1e1f22; border: 1px solid #43454a; border-radius: 4px; padding: 5px 8px; color: #dfe1e5; font-size: 12px; outline: none; }
+
+        .endpoints-tree { padding: 8px 0; overflow-y: auto; flex: 1; }
+        .tree-group { padding: 4px 12px; font-weight: 600; color: #dfe1e5; font-size: 12px; display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+        .tree-item { padding: 5px 12px 5px 28px; display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 12px; }
+        .tree-item.active { background: #3574f0; color: #fff; }
+        .tree-item:hover:not(.active) { background: #33353a; }
+        .method-tag { font-size: 10px; font-weight: bold; width: 36px; }
+        .method-tag.get { color: #57965c; }
+        .tree-item.active .method-tag.get { color: #fff; }
+        .method-tag.post { color: #c9883b; }
+        .method-tag.put { color: #3574f0; }
+        .method-tag.delete { color: #e55353; }
+
+        /* Request & Response Container */
+        .workspace { flex: 1; display: flex; flex-direction: column; background: #1e1f22; }
+
+        /* Request Header */
+        .request-header { padding: 12px 16px; border-bottom: 1px solid #2b2d30; background: #26282d; }
+        .request-bar { display: flex; gap: 8px; align-items: center; }
+        .req-method { background: #57965c; color: #fff; padding: 6px 14px; border-radius: 4px; font-weight: bold; font-size: 12px; }
+        .req-url { flex: 1; background: #1e1f22; border: 1px solid #43454a; border-radius: 4px; padding: 7px 12px; color: #dfe1e5; font-family: "JetBrains Mono", monospace; font-size: 12px; }
+        .send-btn { background: #3574f0; color: #fff; border: none; padding: 7px 22px; border-radius: 4px; font-weight: 600; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 6px; }
+
+        .param-tabs { display: flex; gap: 16px; margin-top: 10px; font-size: 12px; color: #8a8d93; border-bottom: 1px solid #2b2d30; padding-bottom: 6px; }
+        .param-tab.active { color: #dfe1e5; font-weight: 600; border-bottom: 2px solid #3574f0; padding-bottom: 6px; margin-bottom: -7px; }
+
+        /* Response Split Pane */
+        .response-container { flex: 1; display: flex; flex-direction: column; padding: 16px; overflow: hidden; }
+        .response-status-bar { display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; border-bottom: 1px solid #2b2d30; }
+        .status-pill { background: rgba(87, 150, 92, 0.2); color: #57965c; border: 1px solid #57965c; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; }
+        .meta-tags { display: flex; gap: 16px; font-size: 12px; color: #8a8d93; }
+        .meta-tags b { color: #dfe1e5; }
+
+        .response-editor { flex: 1; background: #191a1c; border: 1px solid #2b2d30; border-radius: 4px; margin-top: 12px; padding: 16px; overflow: auto; font-family: "JetBrains Mono", Consolas, monospace; font-size: 12.5px; line-height: 1.55; }
+        
+        .k { color: #3574f0; }
+        .s { color: #6aab73; }
+        .n { color: #2aacb8; }
+        .b { color: #c9883b; }
+        .null { color: #e55353; }
+    </style>
+</head>
+<body>
+
+    <!-- IntelliJ Window Bar -->
+    <div class="window-header">
+        <div class="window-title">
+            <span>💻 autoloc-api [C:\Users\Pc\Desktop\autoloc\autoloc-api] - CoolRequest Plugin</span>
+        </div>
+        <div class="window-dots">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Sidebar CoolRequest -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">
+                    <span class="badge-cool">CoolRequest</span>
+                    <span>API Explorer</span>
+                </div>
+                <span style="color:#8a8d93; font-size:11px;">Port 8081</span>
+            </div>
+            <div class="tree-search">
+                <input class="search-input" type="text" value="AutoLoc REST Endpoints" readonly>
+            </div>
+            <div class="endpoints-tree">
+                <div class="tree-group">📂 AgenceController (/agences)</div>
+                <div class="tree-item active">
+                    <span class="method-tag get">GET</span>
+                    <span>/agences</span>
+                </div>
+                <div class="tree-item">
+                    <span class="method-tag get">GET</span>
+                    <span>/agences/{id}</span>
+                </div>
+                <div class="tree-item">
+                    <span class="method-tag post">POST</span>
+                    <span>/agences</span>
+                </div>
+                <div class="tree-item">
+                    <span class="method-tag put">PUT</span>
+                    <span>/agences/{id}</span>
+                </div>
+                <div class="tree-item">
+                    <span class="method-tag delete">DEL</span>
+                    <span>/agences/{id}</span>
+                </div>
+
+                <div class="tree-group">📂 ClientController (/clients)</div>
+                <div class="tree-item">
+                    <span class="method-tag get">GET</span>
+                    <span>/clients</span>
+                </div>
+                <div class="tree-item">
+                    <span class="method-tag post">POST</span>
+                    <span>/clients</span>
+                </div>
+
+                <div class="tree-group">📂 VehiculeController (/vehicules)</div>
+                <div class="tree-item">
+                    <span class="method-tag get">GET</span>
+                    <span>/vehicules</span>
+                </div>
+                <div class="tree-item">
+                    <span class="method-tag get">GET</span>
+                    <span>/vehicules/{id}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Workspace Request & Response -->
+        <div class="workspace">
+            <div class="request-header">
+                <div class="request-bar">
+                    <div class="req-method">GET</div>
+                    <input class="req-url" type="text" value="http://localhost:8081/agences" readonly>
+                    <button class="send-btn">▶ Send</button>
+                </div>
+                <div class="param-tabs">
+                    <div class="param-tab active">Params (0)</div>
+                    <div class="param-tab">Headers (4)</div>
+                    <div class="param-tab">Body (none)</div>
+                    <div class="param-tab">Pre-script</div>
+                </div>
+            </div>
+
+            <div class="response-container">
+                <div class="response-status-bar">
+                    <div class="status-pill">200 OK</div>
+                    <div class="meta-tags">
+                        <span>Time: <b>28 ms</b></span>
+                        <span>Size: <b>512 B</b></span>
+                        <span>Content-Type: <b>application/json</b></span>
+                    </div>
+                </div>
+
+                <div class="response-editor">
+<pre>[
+  {
+    <span class="k">"idAgence"</span>: <span class="n">1</span>,
+    <span class="k">"nom"</span>: <span class="s">"AutoLoc Tunis Centre"</span>,
+    <span class="k">"ville"</span>: <span class="s">"Tunis"</span>,
+    <span class="k">"adresse"</span>: <span class="s">"Avenue Habib Bourguiba, Tunis"</span>,
+    <span class="k">"telephone"</span>: <span class="s">"21671000111"</span>,
+    <span class="k">"employes"</span>: [],
+    <span class="k">"vehicules"</span>: []
+  },
+  {
+    <span class="k">"idAgence"</span>: <span class="n">2</span>,
+    <span class="k">"nom"</span>: <span class="s">"AutoLoc Sousse Marina"</span>,
+    <span class="k">"ville"</span>: <span class="s">"Sousse"</span>,
+    <span class="k">"adresse"</span>: <span class="s">"Port El Kantaoui, Sousse"</span>,
+    <span class="k">"telephone"</span>: <span class="s">"21673888999"</span>,
+    <span class="k">"employes"</span>: [],
+    <span class="k">"vehicules"</span>: []
+  }
+]</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

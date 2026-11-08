@@ -1,8 +1,10 @@
 package tn.esprit.autoloc.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tn.esprit.autoloc.domain.Paiement;
+import tn.esprit.autoloc.dto.PaiementDTO;
+import tn.esprit.autoloc.exception.ResourceNotFoundException;
+import tn.esprit.autoloc.mapper.PaiementMapper;
 import tn.esprit.autoloc.repository.PaiementRepository;
 
 import java.util.List;
@@ -10,36 +12,57 @@ import java.util.List;
 @Service
 public class PaiementService implements InterfacePaiementService {
 
-    @Autowired
-    private PaiementRepository paiementRepository;
+    private static final String PAIEMENT_NOT_FOUND = "Paiement non trouvé avec l'identifiant : ";
 
-    @Override
-    public List<Paiement> retrieveAllPaiements() {
-        return paiementRepository.findAll();
+    private final PaiementRepository paiementRepository;
+    private final PaiementMapper paiementMapper;
+
+    public PaiementService(PaiementRepository paiementRepository, PaiementMapper paiementMapper) {
+        this.paiementRepository = paiementRepository;
+        this.paiementMapper = paiementMapper;
     }
 
     @Override
-    public Paiement addPaiement(Paiement paiement) {
-        return paiementRepository.save(paiement);
+    public List<PaiementDTO> retrieveAllPaiements() {
+        return paiementMapper.toDtoList(paiementRepository.findAll());
     }
 
     @Override
-    public Paiement updatePaiement(Paiement paiement) {
-        return paiementRepository.save(paiement);
+    public PaiementDTO addPaiement(PaiementDTO paiementDTO) {
+        Paiement entity = paiementMapper.toEntity(paiementDTO);
+        Paiement saved = paiementRepository.save(entity);
+        return paiementMapper.toDto(saved);
     }
 
     @Override
-    public Paiement retrievePaiement(Long idPaiement) {
-        return paiementRepository.findById(idPaiement).orElse(null);
+    public PaiementDTO updatePaiement(PaiementDTO paiementDTO) {
+        if (paiementDTO.getIdPaiement() != null && !paiementRepository.existsById(paiementDTO.getIdPaiement())) {
+            throw new ResourceNotFoundException(PAIEMENT_NOT_FOUND + paiementDTO.getIdPaiement());
+        }
+        Paiement entity = paiementMapper.toEntity(paiementDTO);
+        Paiement updated = paiementRepository.save(entity);
+        return paiementMapper.toDto(updated);
+    }
+
+    @Override
+    public PaiementDTO retrievePaiement(Long idPaiement) {
+        Paiement paiement = paiementRepository.findById(idPaiement)
+                .orElseThrow(() -> new ResourceNotFoundException(PAIEMENT_NOT_FOUND + idPaiement));
+        return paiementMapper.toDto(paiement);
     }
 
     @Override
     public void removePaiement(Long idPaiement) {
+        if (!paiementRepository.existsById(idPaiement)) {
+            throw new ResourceNotFoundException(PAIEMENT_NOT_FOUND + idPaiement);
+        }
         paiementRepository.deleteById(idPaiement);
     }
 
     @Override
-    public List<Paiement> addPaiements(List<Paiement> paiements) {
-        return paiementRepository.saveAll(paiements);
+    public List<PaiementDTO> addPaiements(List<PaiementDTO> paiementDTOs) {
+        List<Paiement> entities = paiementMapper.toEntityList(paiementDTOs);
+        List<Paiement> savedList = paiementRepository.saveAll(entities);
+        return paiementMapper.toDtoList(savedList);
     }
 }

@@ -1,8 +1,10 @@
 package tn.esprit.autoloc.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tn.esprit.autoloc.domain.Maintenance;
+import tn.esprit.autoloc.dto.MaintenanceDTO;
+import tn.esprit.autoloc.exception.ResourceNotFoundException;
+import tn.esprit.autoloc.mapper.MaintenanceMapper;
 import tn.esprit.autoloc.repository.MaintenanceRepository;
 
 import java.util.List;
@@ -10,36 +12,57 @@ import java.util.List;
 @Service
 public class MaintenanceService implements InterfaceMaintenanceService {
 
-    @Autowired
-    private MaintenanceRepository maintenanceRepository;
+    private static final String MAINTENANCE_NOT_FOUND = "Maintenance non trouvée avec l'identifiant : ";
 
-    @Override
-    public List<Maintenance> retrieveAllMaintenances() {
-        return maintenanceRepository.findAll();
+    private final MaintenanceRepository maintenanceRepository;
+    private final MaintenanceMapper maintenanceMapper;
+
+    public MaintenanceService(MaintenanceRepository maintenanceRepository, MaintenanceMapper maintenanceMapper) {
+        this.maintenanceRepository = maintenanceRepository;
+        this.maintenanceMapper = maintenanceMapper;
     }
 
     @Override
-    public Maintenance addMaintenance(Maintenance maintenance) {
-        return maintenanceRepository.save(maintenance);
+    public List<MaintenanceDTO> retrieveAllMaintenances() {
+        return maintenanceMapper.toDtoList(maintenanceRepository.findAll());
     }
 
     @Override
-    public Maintenance updateMaintenance(Maintenance maintenance) {
-        return maintenanceRepository.save(maintenance);
+    public MaintenanceDTO addMaintenance(MaintenanceDTO maintenanceDTO) {
+        Maintenance entity = maintenanceMapper.toEntity(maintenanceDTO);
+        Maintenance saved = maintenanceRepository.save(entity);
+        return maintenanceMapper.toDto(saved);
     }
 
     @Override
-    public Maintenance retrieveMaintenance(Long idMaintenance) {
-        return maintenanceRepository.findById(idMaintenance).orElse(null);
+    public MaintenanceDTO updateMaintenance(MaintenanceDTO maintenanceDTO) {
+        if (maintenanceDTO.getIdMaintenance() != null && !maintenanceRepository.existsById(maintenanceDTO.getIdMaintenance())) {
+            throw new ResourceNotFoundException(MAINTENANCE_NOT_FOUND + maintenanceDTO.getIdMaintenance());
+        }
+        Maintenance entity = maintenanceMapper.toEntity(maintenanceDTO);
+        Maintenance updated = maintenanceRepository.save(entity);
+        return maintenanceMapper.toDto(updated);
+    }
+
+    @Override
+    public MaintenanceDTO retrieveMaintenance(Long idMaintenance) {
+        Maintenance maintenance = maintenanceRepository.findById(idMaintenance)
+                .orElseThrow(() -> new ResourceNotFoundException(MAINTENANCE_NOT_FOUND + idMaintenance));
+        return maintenanceMapper.toDto(maintenance);
     }
 
     @Override
     public void removeMaintenance(Long idMaintenance) {
+        if (!maintenanceRepository.existsById(idMaintenance)) {
+            throw new ResourceNotFoundException(MAINTENANCE_NOT_FOUND + idMaintenance);
+        }
         maintenanceRepository.deleteById(idMaintenance);
     }
 
     @Override
-    public List<Maintenance> addMaintenances(List<Maintenance> maintenances) {
-        return maintenanceRepository.saveAll(maintenances);
+    public List<MaintenanceDTO> addMaintenances(List<MaintenanceDTO> maintenanceDTOs) {
+        List<Maintenance> entities = maintenanceMapper.toEntityList(maintenanceDTOs);
+        List<Maintenance> savedList = maintenanceRepository.saveAll(entities);
+        return maintenanceMapper.toDtoList(savedList);
     }
 }

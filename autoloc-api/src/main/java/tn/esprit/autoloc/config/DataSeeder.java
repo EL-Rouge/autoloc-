@@ -1,15 +1,18 @@
 package tn.esprit.autoloc.config;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
 import tn.esprit.autoloc.domain.CategorieVehicule;
 import tn.esprit.autoloc.domain.StatutVehicule;
 import tn.esprit.autoloc.domain.Vehicule;
 import tn.esprit.autoloc.repository.VehiculeRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.util.List;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class DataSeeder implements CommandLineRunner {
@@ -19,7 +22,7 @@ public class DataSeeder implements CommandLineRunner {
     @Override
     public void run(String... args) {
         if (vehiculeRepository.count() > 0) {
-            return; // évite de dupliquer les données à chaque redémarrage
+            return;
         }
 
         Vehicule v1 = new Vehicule();
@@ -46,8 +49,8 @@ public class DataSeeder implements CommandLineRunner {
         v3.setTarifJournalier(new BigDecimal("150.00"));
         v3.setStatut(StatutVehicule.MAINTENANCE);
 
-        vehiculeRepository.saveAll(java.util.List.of(v1, v2, v3));
+        vehiculeRepository.saveAll(List.of(v1, v2, v3));
 
-        System.out.println("3 véhicules de démonstration insérés.");
+        log.info("3 véhicules de démonstration insérés avec succès.");
     }
 }

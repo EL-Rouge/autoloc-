@@ -1,46 +1,70 @@
 package tn.esprit.autoloc.web.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import tn.esprit.autoloc.domain.Maintenance;
+import tn.esprit.autoloc.dto.MaintenanceDTO;
 import tn.esprit.autoloc.service.InterfaceMaintenanceService;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/maintenances")
+@Tag(name = "Maintenances", description = "Gestion des maintenances avec DTOs et validation")
 public class MaintenanceController {
 
-    @Autowired
-    private InterfaceMaintenanceService maintenanceService;
+    private final InterfaceMaintenanceService maintenanceService;
+
+    public MaintenanceController(InterfaceMaintenanceService maintenanceService) {
+        this.maintenanceService = maintenanceService;
+    }
 
     @GetMapping
-    public List<Maintenance> retrieveAllMaintenances() {
+    @Operation(summary = "Afficher toutes les maintenances (DTO)")
+    @ApiResponse(responseCode = "200", description = "Liste des maintenances recuperee")
+    public List<MaintenanceDTO> retrieveAllMaintenances() {
         return maintenanceService.retrieveAllMaintenances();
     }
 
     @GetMapping("/{id}")
-    public Maintenance retrieveMaintenance(@PathVariable("id") Long idMaintenance) {
-        return maintenanceService.retrieveMaintenance(idMaintenance);
+    @Operation(summary = "Rechercher une maintenance par ID (DTO)")
+    @ApiResponse(responseCode = "200", description = "Maintenance trouvee")
+    @ApiResponse(responseCode = "404", description = "Maintenance introuvable")
+    public ResponseEntity<MaintenanceDTO> retrieveMaintenance(@PathVariable Long id) {
+        MaintenanceDTO dto = maintenanceService.retrieveMaintenance(id);
+        return ResponseEntity.ok(dto);
     }
 
     @PostMapping
-    public Maintenance addMaintenance(@RequestBody Maintenance maintenance) {
-        return maintenanceService.addMaintenance(maintenance);
+    @Operation(summary = "Ajouter une maintenance (DTO avec validation)")
+    @ApiResponse(responseCode = "201", description = "Maintenance creee")
+    @ApiResponse(responseCode = "400", description = "Donnees invalides")
+    public ResponseEntity<MaintenanceDTO> addMaintenance(@Valid @RequestBody MaintenanceDTO maintenanceDTO) {
+        MaintenanceDTO created = maintenanceService.addMaintenance(maintenanceDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-    @PostMapping("/batch")
-    public List<Maintenance> addMaintenances(@RequestBody List<Maintenance> maintenances) {
-        return maintenanceService.addMaintenances(maintenances);
-    }
-
-    @PutMapping
-    public Maintenance updateMaintenance(@RequestBody Maintenance maintenance) {
-        return maintenanceService.updateMaintenance(maintenance);
+    @PutMapping("/{id}")
+    @Operation(summary = "Modifier une maintenance (DTO avec validation)")
+    @ApiResponse(responseCode = "200", description = "Maintenance modifiee")
+    @ApiResponse(responseCode = "400", description = "Donnees invalides")
+    @ApiResponse(responseCode = "404", description = "Maintenance introuvable")
+    public ResponseEntity<MaintenanceDTO> updateMaintenance(@PathVariable Long id, @Valid @RequestBody MaintenanceDTO maintenanceDTO) {
+        maintenanceDTO.setIdMaintenance(id);
+        MaintenanceDTO updated = maintenanceService.updateMaintenance(maintenanceDTO);
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
-    public void removeMaintenance(@PathVariable("id") Long idMaintenance) {
-        maintenanceService.removeMaintenance(idMaintenance);
+    @Operation(summary = "Supprimer une maintenance")
+    @ApiResponse(responseCode = "204", description = "Maintenance supprimee")
+    @ApiResponse(responseCode = "404", description = "Maintenance introuvable")
+    public ResponseEntity<Void> removeMaintenance(@PathVariable Long id) {
+        maintenanceService.removeMaintenance(id);
+        return ResponseEntity.noContent().build();
     }
 }

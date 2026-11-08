@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Postman - AutoLoc API</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background: #181818; color: #e0e0e0; display: flex; height: 100vh; overflow: hidden; font-size: 13px; }
+        
+        /* Sidebar */
+        .sidebar { width: 300px; background: #212121; border-right: 1px solid #333; display: flex; flex-direction: column; }
+        .sidebar-header { padding: 14px 16px; border-bottom: 1px solid #333; display: flex; align-items: center; justify-content: space-between; font-weight: 600; color: #fff; }
+        .sidebar-header .logo { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+        .sidebar-header .logo-badge { background: #ff6c37; color: #fff; border-radius: 4px; padding: 2px 6px; font-size: 11px; font-weight: bold; }
+        
+        .collection-tree { padding: 10px; overflow-y: auto; flex: 1; }
+        .collection-name { font-weight: bold; color: #ff6c37; padding: 8px 10px; border-radius: 4px; display: flex; align-items: center; gap: 8px; }
+        .folder { margin-left: 12px; margin-top: 6px; }
+        .folder-title { font-weight: 600; color: #bbb; padding: 6px 8px; display: flex; align-items: center; gap: 6px; font-size: 12px; }
+        .item { margin-left: 16px; padding: 5px 8px; border-radius: 4px; display: flex; align-items: center; gap: 8px; color: #999; font-size: 12px; cursor: pointer; }
+        .item.active { background: #2e2e2e; color: #fff; font-weight: 500; }
+        .item-method { font-size: 10px; font-weight: bold; width: 44px; }
+        .m-get { color: #0cbb52; }
+        .m-post { color: #e58512; }
+        .m-put { color: #097bed; }
+        .m-delete { color: #eb2f96; }
+
+        /* Main Workspace */
+        .main-workspace { flex: 1; display: flex; flex-direction: column; background: #1a1a1a; }
+        .tab-bar { background: #1e1e1e; border-bottom: 1px solid #2d2d2d; display: flex; align-items: center; padding: 0 12px; height: 38px; }
+        .tab { background: #262626; color: #fff; padding: 8px 16px; border-radius: 4px 4px 0 0; display: flex; align-items: center; gap: 8px; font-size: 12px; border-bottom: 2px solid #ff6c37; }
+        
+        .request-area { padding: 16px; border-bottom: 1px solid #2d2d2d; }
+        .url-bar { display: flex; background: #242424; border: 1px solid #3c3c3c; border-radius: 4px; overflow: hidden; height: 40px; }
+        .method-select { background: #282828; color: #0cbb52; border: none; padding: 0 16px; font-weight: bold; font-size: 13px; border-right: 1px solid #3c3c3c; display: flex; align-items: center; }
+        .method-select.post { color: #e58512; }
+        .url-input { flex: 1; background: transparent; border: none; padding: 0 12px; color: #fff; font-family: monospace; font-size: 13px; }
+        .send-btn { background: #097bed; color: #fff; border: none; padding: 0 24px; font-weight: 600; cursor: pointer; font-size: 13px; }
+        
+        .request-tabs { display: flex; gap: 20px; margin-top: 14px; font-size: 12px; color: #888; border-bottom: 1px solid #2d2d2d; padding-bottom: 8px; }
+        .req-tab.active { color: #fff; font-weight: 600; border-bottom: 2px solid #ff6c37; padding-bottom: 8px; margin-bottom: -9px; }
+
+        /* Response Area */
+        .response-area { flex: 1; display: flex; flex-direction: column; padding: 16px; background: #1e1e1e; overflow: hidden; }
+        .response-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px solid #2d2d2d; }
+        .resp-meta { display: flex; gap: 20px; font-size: 12px; align-items: center; }
+        .status-badge { color: #0cbb52; font-weight: bold; display: flex; align-items: center; gap: 6px; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #0cbb52; }
+        .time-badge, .size-badge { color: #aaa; }
+        .time-badge span, .size-badge span { color: #0cbb52; font-weight: 600; }
+        
+        .response-body { flex: 1; background: #161616; border: 1px solid #282828; border-radius: 4px; margin-top: 12px; padding: 16px; overflow: auto; font-family: Consolas, "Courier New", monospace; font-size: 13px; line-height: 1.5; }
+        
+        /* JSON Syntax Highlighting */
+        .json-key { color: #60a5fa; }
+        .json-string { color: #f59e0b; }
+        .json-number { color: #34d399; }
+        .json-boolean { color: #a78bfa; }
+        .json-null { color: #f87171; }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Postman -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <span class="logo-badge">POSTMAN</span>
+                <span>AutoLoc Workspace</span>
+            </div>
+        </div>
+        <div class="collection-tree">
+            <div class="collection-name">📁 AutoLoc API - Collection Postman</div>
+            
+            <div class="folder">
+                <div class="folder-title">📂 1. Véhicules</div>
+                <div class="item active">
+                    <span class="item-method m-get">GET</span>
+                    <span>Tous les véhicules</span>
+                </div>
+                <div class="item">
+                    <span class="item-method m-get">GET</span>
+                    <span>Véhicule par ID (1)</span>
+                </div>
+                <div class="item">
+                    <span class="item-method m-post">POST</span>
+                    <span>Ajouter véhicule</span>
+                </div>
+                <div class="item">
+                    <span class="item-method m-put">PUT</span>
+                    <span>Mettre à jour véhicule</span>
+                </div>
+                <div class="item">
+                    <span class="item-method m-delete">DEL</span>
+                    <span>Supprimer véhicule</span>
+                </div>
+            </div>
+
+            <div class="folder">
+                <div class="folder-title">📂 2. Clients</div>
+                <div class="item">
+                    <span class="item-method m-get">GET</span>
+                    <span>Tous les clients</span>
+                </div>
+                <div class="item">
+                    <span class="item-method m-post">POST</span>
+                    <span>Ajouter client</span>
+                </div>
+                <div class="item">
+                    <span class="item-method m-put">PUT</span>
+                    <span>Mettre à jour client</span>
+                </div>
+                <div class="item">
+                    <span class="item-method m-delete">DEL</span>
+                    <span>Supprimer client</span>
+                </div>
+            </div>
+
+            <div class="folder">
+                <div class="folder-title">📂 3. Agences</div>
+                <div class="item">
+                    <span class="item-method m-get">GET</span>
+                    <span>Toutes les agences</span>
+                </div>
+                <div class="item">
+                    <span class="item-method m-post">POST</span>
+                    <span>Ajouter agence</span>
+                </div>
+                <div class="item">
+                    <span class="item-method m-put">PUT</span>
+                    <span>Mettre à jour agence</span>
+                </div>
+                <div class="item">
+                    <span class="item-method m-delete">DEL</span>
+                    <span>Supprimer agence</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Workspace -->
+    <div class="main-workspace">
+        <div class="tab-bar">
+            <div class="tab">
+                <span class="m-get" style="font-weight:bold; font-size:11px;">GET</span>
+                <span>http://localhost:8081/vehicules</span>
+                <span style="color:#666; cursor:pointer;">&times;</span>
+            </div>
+        </div>
+
+        <div class="request-area">
+            <div class="url-bar">
+                <div class="method-select">GET</div>
+                <input class="url-input" type="text" value="http://localhost:8081/vehicules" readonly>
+                <button class="send-btn">Send</button>
+            </div>
+            <div class="request-tabs">
+                <div class="req-tab">Params</div>
+                <div class="req-tab">Authorization</div>
+                <div class="req-tab">Headers (7)</div>
+                <div class="req-tab">Body</div>
+                <div class="req-tab active">Tests</div>
+            </div>
+        </div>
+
+        <div class="response-area">
+            <div class="response-header">
+                <div class="resp-meta">
+                    <div class="status-badge">
+                        <span class="status-dot"></span>
+                        Status: 200 OK
+                    </div>
+                    <div class="time-badge">Time: <span>32 ms</span></div>
+                    <div class="size-badge">Size: <span>850 B</span></div>
+                </div>
+                <div style="font-size:12px; color:#888;">Format: <b>JSON</b></div>
+            </div>
+
+            <div class="response-body">
+<pre>[
+  {
+    <span class="json-key">"idVehicule"</span>: <span class="json-number">1</span>,
+    <span class="json-key">"immatriculation"</span>: <span class="json-string">"TUN-1234"</span>,
+    <span class="json-key">"marque"</span>: <span class="json-string">"Peugeot"</span>,
+    <span class="json-key">"modele"</span>: <span class="json-string">"208"</span>,
+    <span class="json-key">"categorie"</span>: <span class="json-string">"CITADINE"</span>,
+    <span class="json-key">"tarifJournalier"</span>: <span class="json-number">60.00</span>,
+    <span class="json-key">"statut"</span>: <span class="json-string">"DISPONIBLE"</span>,
+    <span class="json-key">"agence"</span>: <span class="json-null">null</span>,
+    <span class="json-key">"equipements"</span>: []
+  },
+  {
+    <span class="json-key">"idVehicule"</span>: <span class="json-number">2</span>,
+    <span class="json-key">"immatriculation"</span>: <span class="json-string">"TUN-5678"</span>,
+    <span class="json-key">"marque"</span>: <span class="json-string">"Volkswagen"</span>,
+    <span class="json-key">"modele"</span>: <span class="json-string">"Golf"</span>,
+    <span class="json-key">"categorie"</span>: <span class="json-string">"BERLINE"</span>,
+    <span class="json-key">"tarifJournalier"</span>: <span class="json-number">90.00</span>,
+    <span class="json-key">"statut"</span>: <span class="json-string">"DISPONIBLE"</span>,
+    <span class="json-key">"agence"</span>: <span class="json-null">null</span>,
+    <span class="json-key">"equipements"</span>: []
+  },
+  {
+    <span class="json-key">"idVehicule"</span>: <span class="json-number">3</span>,
+    <span class="json-key">"immatriculation"</span>: <span class="json-string">"TUN-9012"</span>,
+    <span class="json-key">"marque"</span>: <span class="json-string">"Toyota"</span>,
+    <span class="json-key">"modele"</span>: <span class="json-string">"RAV4"</span>,
+    <span class="json-key">"categorie"</span>: <span class="json-string">"SUV"</span>,
+    <span class="json-key">"tarifJournalier"</span>: <span class="json-number">150.00</span>,
+    <span class="json-key">"statut"</span>: <span class="json-string">"MAINTENANCE"</span>,
+    <span class="json-key">"agence"</span>: <span class="json-null">null</span>,
+    <span class="json-key">"equipements"</span>: []
+  }
+]</pre>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
